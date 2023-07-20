@@ -1,0 +1,69 @@
+import csv
+import os
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
+from rdkit import rdBase
+from rdkit.Chem import RDConfig
+from rdkit.DataManip.Metric import GetTanimotoDistMat
+from rdkit.DataManip.Metric import GetTanimotoSimMat
+import numpy as np
+
+## Define your variables 
+
+partition_list = []
+
+n=0
+
+mol_list=[]
+
+bit_list = []
+
+bit_list_partition = []
+
+
+fields = ['Partition Compound Number', 'Compound Library Number', 'Tanimoto similarity', 'Partition_list_smiles', 'Mol_list_Smiles', 'probe partitioning data', 'other probe partitioning data'] 
+
+## import smiles data, is metered by counter i throughout the remainder 
+ 
+with open('***.csv', 'r') as smiles:	
+	reader= csv.reader(smiles)
+	for line in reader:
+		m = Chem.MolFromSmiles(line[0])
+		mol_list.append(m)
+
+
+## import other smiles data is metered by metric j throughout
+
+with open('***.csv', 'r') as psmiles:	
+	reader2= csv.reader(psmiles)
+	for line in reader2:
+		m = Chem.MolFromSmiles(line[0])
+		partition_list.append(m)
+
+
+partition_bit_list = [AllChem.GetMorganFingerprintAsBitVect(x,3,nBits=2048) for x in partition_list]
+
+bit_list = [AllChem.GetMorganFingerprintAsBitVect(x,3,nBits=2048) for x in mol_list]
+
+mol_list_size = len(mol_list)
+partition_list_size = len(partition_list)
+
+print(mol_list_size)
+print(partition_list_size)
+
+with open('****.csv','w') as output_file:	## compare compound similarity and write a file
+	csv_writer = csv.writer(output_file)
+	csv_writer.writerow(fields) 
+	for i in range(0,mol_list_size):
+		
+		for j in range(0,partition_list_size):
+			 #print(i) 
+			 #print(j)
+			 m = DataStructs.FingerprintSimilarity(bit_list[i], partition_bit_list[j])
+			 k = mol_list[i]
+			 h = partition_list[j]
+			 rows = [ j, i, m, str(Chem.MolToSmiles(h)), str(Chem.MolToSmiles(k))]
+			 csv_writer.writerow(rows)
+			 
