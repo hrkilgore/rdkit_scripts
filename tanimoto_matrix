@@ -1,0 +1,36 @@
+import csv
+import os
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
+from rdkit import rdBase
+from rdkit.Chem import RDConfig
+from rdkit.DataManip.Metric import GetTanimotoDistMat
+from rdkit.DataManip.Metric import GetTanimotoSimMat
+import numpy as np
+
+mol_list=[]
+bit_list = []
+
+with open('metformin_drug_buffer_tophit.csv', 'r') as smiles:
+	reader= csv.reader(smiles)
+	for line in reader:
+		m = Chem.MolFromSmiles(line[0])
+		mol_list.append(m)
+
+
+
+finger_prints = len(mol_list)
+
+bit_list = [AllChem.GetMorganFingerprintAsBitVect(x,3,nBits=2048) for x in mol_list]
+
+with open('tanimoto_matrix.csv','w') as output_file:
+	csv_writer = csv.writer(output_file)
+
+	for i in range(0,finger_prints):
+		test = DataStructs.BulkTanimotoSimilarity(bit_list[i],bit_list)
+		csv_writer.writerow(test)
+
+	
+	
