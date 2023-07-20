@@ -1,0 +1,33 @@
+import csv
+import os
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit import DataStructs
+from rdkit.Chem import PandasTools
+
+fields = ['SMILES','TPSA','MolLogP','NumHAcceptors','NumHDonors','Rotatable bonds','Aromatic Rings','Saturated rings' ,'Aliphatic Rings', 'Ring Count', 'Molecular weight']
+
+
+with open('med1_ranked_smiles.csv', 'r') as smiles:
+	with open('bodipy_ranked_mproperties.csv','w') as output_file:
+		csv_writer = csv.writer(output_file)
+		csv_writer.writerow(fields)
+		
+		reader = csv.reader(smiles)
+		for line in reader:
+			
+			m =Chem.MolFromSmiles(line[0])			#Compute values of interest
+			p1 = Descriptors.TPSA(m)                           
+			p2 = Descriptors.MolLogP(m)
+			p3 = Descriptors.NumHAcceptors(m)
+			p4 = Descriptors.NumHDonors(m)
+			p5 = Descriptors.NumRotatableBonds(m)
+			p6 = Descriptors.NumAromaticRings(m)
+			p7 = Descriptors.NumSaturatedRings(m)
+			p8 = Descriptors.NumAliphaticRings(m)
+			p9 = Descriptors.RingCount(m)
+			p10 = Descriptors.ExactMolWt(m)
+			rows = [str(Chem.MolToSmiles(m)),str(p1), str(p2), str(p3), str(p4), str(p5), str(p6), str(p7), str(p8), str(p9), str(p10)]
+
+			csv_writer.writerow(rows)
+		
